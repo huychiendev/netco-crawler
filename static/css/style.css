@@ -1,0 +1,95 @@
+/* CSS Chính cho Netco Crawler */
+
+/* Tùy chỉnh thêm cho Tailwind */
+.document-row:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+.category-card {
+    transition: all 0.3s ease;
+}
+
+.category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Cài đặt cho điều chỉnh kích thước cột */
+table.resizable th {
+    position: relative;
+    overflow: hidden;
+}
+
+table.resizable th:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 6px;
+    background-color: transparent;
+    cursor: col-resize;
+}
+
+table.resizable th:not(:last-child):hover::after {
+    background-color: rgba(59, 130, 246, 0.3);
+}
+
+.resizing {
+    cursor: col-resize;
+    user-select: none;
+}
+
+/* Giới hạn chiều rộng cột tên tệp */
+.column-name {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Animation cho loading */
+.loading-spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: #3b82f6;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive tables */
+@media (max-width: 768px) {
+    .responsive-table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+    }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3b82f6;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #2563eb;
+} 

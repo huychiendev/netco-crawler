@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-center text-blue-700">Tài liệu Công ty Netco</h1>
+            <p class="text-center text-gray-600 mt-2">Tổng hợp tài liệu từ trang web cũ của Netco</p>
+        </header>
+
+        <nav class="mb-8 bg-white shadow-md rounded-lg p-4">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Danh mục tài liệu</h2>
+            <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {{ range $key, $value := .Categories }}
+                <li>
+                    <a href="/category/{{ $key }}" class="category-card block bg-blue-50 hover:bg-blue-100 p-4 rounded-lg transition duration-300 border border-blue-200">
+                        <i class="fas fa-folder text-blue-500 mr-2"></i>
+                        {{ index $.Categories $key }}
+                    </a>
+                </li>
+                {{ end }}
+            </ul>
+        </nav>
+
+        <div class="heading mb-6">
+            <h1 class="text-3xl font-semibold text-gray-800">Tài liệu Công ty Netco</h1>
+            <p class="text-gray-600 mt-2">Hệ thống lưu trữ và quản lý tài liệu Công ty Netco</p>
+        </div>
+
+        <div id="stats" class="bg-white rounded-lg shadow-md p-4 mb-6">
+            <h2 class="text-xl font-medium text-gray-700 mb-3">Thông tin tổng quan</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {{ $totalDocs := 0 }}
+                {{ range $_, $docs := .Documents }}
+                    {{ $totalDocs = add $totalDocs (len $docs) }}
+                {{ end }}
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <p class="text-sm text-blue-800">Tổng số tài liệu</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ $totalDocs }}</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                    <p class="text-sm text-green-800">Số danh mục</p>
+                    <p class="text-3xl font-bold text-green-600">{{ len .Categories }}</p>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                    <p class="text-sm text-purple-800">Cập nhật lần cuối</p>
+                    <p class="text-lg font-semibold text-purple-600" id="lastUpdated"></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-medium text-gray-700">Tất cả tài liệu</h2>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <label for="pageSizeSelect" class="mr-2 text-sm text-gray-600">Hiển thị:</label>
+                        <select id="pageSizeSelect" class="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                            <option value="200">200</option>
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center">
+                        <input id="searchInput" type="text" placeholder="Tìm kiếm tài liệu..." class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto responsive-table">
+                <table class="min-w-full divide-y divide-gray-200 resizable">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" data-sort="1" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                                Tên tập tin <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th scope="col" data-sort="2" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                                Danh mục <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th scope="col" data-sort="3" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                                Kích thước (KB) <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th scope="col" data-sort="4" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                                Lượt tải <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th scope="col" data-sort="5" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                                Sửa đổi <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th scope="col" data-sort="6" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                                Người tải lên <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tải xuống
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="documentTableBody" class="bg-white divide-y divide-gray-200">
+                        {{ range $category, $docs := .Documents }}
+                            {{ range $doc := $docs }}
+                            <tr class="document-row hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 column-name">{{ $doc.Name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ index $.Categories $category }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $doc.Size }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $doc.Downloads }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $doc.Modified }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $doc.UploadedBy }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="/documents/{{ $doc.FilePath }}" class="text-blue-600 hover:text-blue-900" target="_blank">
+                                        <i class="fas fa-download"></i> Tải xuống
+                                    </a>
+                                </td>
+                            </tr>
+                            {{ end }}
+                        {{ end }}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Phân trang -->
+            <div id="pagination" class="flex justify-between items-center mt-4">
+                <div class="text-sm text-gray-600">
+                    Hiển thị <span id="currentDisplayCount">0</span> / <span id="totalCount">0</span> tài liệu
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prevPage" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-chevron-left"></i> Trước
+                    </button>
+                    <div id="pageNumbers" class="flex space-x-1">
+                        <!-- Số trang sẽ được tạo động bằng JavaScript -->
+                    </div>
+                    <button id="nextPage" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed">
+                        Sau <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-gray-200 mt-8 py-4">
+        <div class="container mx-auto px-4 text-center text-gray-600">
+            <p>&copy; 2023 - Tài liệu Công ty Netco</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/main.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Hiển thị thời gian cập nhật
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('lastUpdated').textContent = now.toLocaleDateString('vi-VN', options);
+            
+            // Dữ liệu tài liệu
+            let allDocuments = [];
+            const rows = $("tbody tr.document-row");
+            let currentPage = 1;
+            let pageSize = 20; // Mặc định hiển thị 20 tài liệu mỗi trang
+            let totalPages = 1;
+            let filteredDocuments = [];
+
+            // Thu thập tất cả tài liệu từ bảng
+            rows.each(function() {
+                const row = $(this);
+                const doc = {
+                    element: row,
+                    name: row.find("td:nth-child(1)").text(),
+                    category: row.find("td:nth-child(2)").text(),
+                    size: row.find("td:nth-child(3)").text(),
+                    downloads: row.find("td:nth-child(4)").text(),
+                    modified: row.find("td:nth-child(5)").text(),
+                    uploadedBy: row.find("td:nth-child(6)").text()
+                };
+                allDocuments.push(doc);
+            });
+            
+            filteredDocuments = [...allDocuments];
+            
+            // Cập nhật thông tin số lượng
+            $("#totalCount").text(allDocuments.length);
+            
+            // Khởi tạo phân trang
+            function initPagination() {
+                if (pageSize === 'all') {
+                    totalPages = 1;
+                } else {
+                    totalPages = Math.ceil(filteredDocuments.length / pageSize);
+                }
+                renderPageNumbers();
+                renderTable();
+            }
+            
+            // Hiển thị bảng theo trang hiện tại
+            function renderTable() {
+                // Ẩn tất cả các dòng
+                rows.hide();
+                
+                // Hiển thị các dòng cho trang hiện tại
+                if (pageSize === 'all') {
+                    // Hiển thị tất cả dòng
+                    filteredDocuments.forEach(doc => {
+                        doc.element.show();
+                    });
+                    $("#currentDisplayCount").text(filteredDocuments.length);
+                } else {
+                    // Hiển thị theo phân trang
+                    const startIndex = (currentPage - 1) * pageSize;
+                    const endIndex = Math.min(startIndex + parseInt(pageSize), filteredDocuments.length);
+                    
+                    for (let i = startIndex; i < endIndex; i++) {
+                        filteredDocuments[i].element.show();
+                    }
+                    
+                    $("#currentDisplayCount").text(Math.min(endIndex - startIndex, filteredDocuments.length));
+                }
+                
+                // Cập nhật trạng thái nút phân trang
+                updatePaginationButtons();
+            }
+            
+            // Cập nhật hiển thị các nút phân trang
+            function updatePaginationButtons() {
+                $("#prevPage").prop("disabled", currentPage === 1);
+                $("#nextPage").prop("disabled", currentPage === totalPages || pageSize === 'all');
+                
+                $("#pageNumbers button").removeClass("bg-blue-500 text-white").addClass("bg-gray-200 text-gray-700");
+                $(`#pageNumbers button[data-page="${currentPage}"]`).removeClass("bg-gray-200 text-gray-700").addClass("bg-blue-500 text-white");
+            }
+            
+            // Tạo các nút số trang
+            function renderPageNumbers() {
+                const pageNumbersContainer = $("#pageNumbers");
+                pageNumbersContainer.empty();
+                
+                if (pageSize === 'all') {
+                    // Nếu hiển thị tất cả, chỉ có một trang
+                    pageNumbersContainer.append(`<button data-page="1" class="px-3 py-1 rounded-md bg-blue-500 text-white">1</button>`);
+                } else {
+                    // Tối đa hiển thị 5 nút số trang
+                    const maxVisiblePages = 5;
+                    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                    
+                    if (endPage - startPage + 1 < maxVisiblePages && startPage > 1) {
+                        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                    }
+                    
+                    // Thêm nút trang 1 và dấu ba chấm nếu cần
+                    if (startPage > 1) {
+                        pageNumbersContainer.append(`<button data-page="1" class="px-3 py-1 rounded-md bg-gray-200 text-gray-700">1</button>`);
+                        if (startPage > 2) {
+                            pageNumbersContainer.append(`<span class="px-2 py-1">...</span>`);
+                        }
+                    }
+                    
+                    // Thêm các nút số trang
+                    for (let i = startPage; i <= endPage; i++) {
+                        const buttonClass = i === currentPage ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700";
+                        pageNumbersContainer.append(`<button data-page="${i}" class="px-3 py-1 rounded-md ${buttonClass}">${i}</button>`);
+                    }
+                    
+                    // Thêm dấu ba chấm và nút trang cuối nếu cần
+                    if (endPage < totalPages) {
+                        if (endPage < totalPages - 1) {
+                            pageNumbersContainer.append(`<span class="px-2 py-1">...</span>`);
+                        }
+                        pageNumbersContainer.append(`<button data-page="${totalPages}" class="px-3 py-1 rounded-md bg-gray-200 text-gray-700">${totalPages}</button>`);
+                    }
+                }
+            }
+            
+            // Tìm kiếm
+            $("#searchInput").on("keyup", function() {
+                const value = $(this).val().toLowerCase();
+                
+                if (value.trim() === '') {
+                    // Nếu không có từ khóa tìm kiếm, hiển thị tất cả tài liệu
+                    filteredDocuments = [...allDocuments];
+                } else {
+                    // Lọc tài liệu theo từ khóa
+                    filteredDocuments = allDocuments.filter(doc => {
+                        const searchableText = `${doc.name} ${doc.category} ${doc.uploadedBy}`.toLowerCase();
+                        return searchableText.includes(value);
+                    });
+                }
+                
+                currentPage = 1; // Reset về trang đầu tiên khi tìm kiếm
+                initPagination();
+                renderTable();
+            });
+            
+            // Thay đổi kích thước trang
+            $("#pageSizeSelect").on("change", function() {
+                pageSize = $(this).val();
+                currentPage = 1; // Reset về trang đầu tiên khi thay đổi kích thước trang
+                initPagination();
+            });
+            
+            // Xử lý khi nhấp vào nút trang
+            $("#pageNumbers").on("click", "button", function() {
+                currentPage = parseInt($(this).data("page"));
+                renderTable();
+            });
+            
+            // Xử lý nút Trước và Sau
+            $("#prevPage").on("click", function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+            
+            $("#nextPage").on("click", function() {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+            
+            // Khởi tạo phân trang khi trang được tải
+            initPagination();
+
+            // Mã xử lý điều chỉnh cột
+            const table = $('table.resizable');
+            let isResizing = false;
+            let currentTh = null;
+            let startX, startWidth;
+
+            table.on('mousedown', 'th', function(e) {
+                // Kiểm tra xem có đang click vào khu vực điều chỉnh không
+                const thRight = $(this).offset().left + $(this).outerWidth();
+                if (thRight - e.pageX < 8) {
+                    isResizing = true;
+                    currentTh = $(this);
+                    startX = e.pageX;
+                    startWidth = $(this).width();
+                    $('body').addClass('resizing');
+                    e.preventDefault();
+                }
+            });
+
+            $(document).on('mousemove', function(e) {
+                if (isResizing) {
+                    const width = startWidth + (e.pageX - startX);
+                    if (width > 50) { // Đảm bảo chiều rộng tối thiểu
+                        currentTh.width(width);
+                    }
+                }
+            });
+
+            $(document).on('mouseup', function() {
+                if (isResizing) {
+                    isResizing = false;
+                    $('body').removeClass('resizing');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
